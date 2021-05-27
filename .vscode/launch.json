@@ -1,0 +1,32 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch ReadAllEvents",
+            "request": "launch",
+            "mainClass": "src.main.ReadAllEvents",
+            "projectName": "TelloDroneControl_674a6627"
+        },
+        {
+            "type": "java",
+            "name": "Launch Test",
+            "request": "launch",
+            "mainClass": "src.main.Test",
+            "projectName": "TelloDroneControl_674a6627"
+        },
+        {
+            "type": "java",
+            "name": "Launch Keys",
+            "request": "launch",
+            "mainClass": "src.main.Keys",
+            "projectName": "TelloDroneControl_674a6627"
+        },
+        {
+            "type": "java",
+            "name": "Launch Main",
+            "request": "launch",
+            "mainClass": "src.main.Main",
+            "projectName": "TelloDroneControl_674a6627"
+        }
+    ]
+}

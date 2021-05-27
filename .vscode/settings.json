@@ -1,0 +1,11 @@
+{
+    "java.project.sourcePaths": [
+        "code"
+    ],
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "code/lib/jtello.jar",
+        "code/lib/jinput.jar"
+    ]
+    
+}
