@@ -37,6 +37,7 @@ public class Keys extends JFrame implements KeyListener{ // class for GUI of con
     public Keys(String name){
         super(name);
         setMinimumSize(new Dimension(500,600));
+        foundControllers = new ArrayList<>();
         setFocusable(true);
     }
 
@@ -64,6 +65,7 @@ public class Keys extends JFrame implements KeyListener{ // class for GUI of con
         controller_search_butt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e ){
                 searchForControllers();
+                System.out.println("looking for controller");
             }
         });
         topLayer_pnl.add(controller_search_butt);
