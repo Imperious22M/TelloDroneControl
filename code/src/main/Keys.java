@@ -7,17 +7,15 @@ import java.awt.Dimension;
 import java.awt.LayoutManager;
 import java.lang.StringBuilder;
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.stream.Stream;
 
 import javax.swing.border.Border;
+
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 
 import javax.swing.*;
-
-import net.java.games.input.Component;
-import net.java.games.input.Component.Identifier;
-import net.java.games.input.Controller;
-import net.java.games.input.ControllerEnvironment;
 
 //This class is the JFrame window, everything graphical gets added to it
 public class Keys extends JFrame implements KeyListener{ // class for GUI of control center
@@ -25,25 +23,28 @@ public class Keys extends JFrame implements KeyListener{ // class for GUI of con
     static final String newline = System.getProperty("line.separator");
     private JTextArea displayArea;
     private JTextArea telemetryArea;
-    //Actions droneAction; // class where all drone actions are defined
-    private Control droneAction;
+    private DroneControl droneAction;
     private JComboBox jcombo_controllerList;
-    private ArrayList<Controller> foundControllers;
+    private final int jFrame_default_width = 700;
+    private final int JFrame_default_height = 800;    
+    private JoystickControl joystickControl = new JoystickControl();
+    private DroneMode droneMode;
+    //private boolean drone_Control_Active = false;
 
     public Keys(){
+        super("Drone Control Default Name");
+        setMinimumSize(new Dimension(JFrame_default_height,jFrame_default_width));
         setFocusable(true);
     }
 
     public Keys(String name){
         super(name);
-        setMinimumSize(new Dimension(500,600));
-        foundControllers = new ArrayList<>();
+        setMinimumSize(new Dimension(JFrame_default_height,jFrame_default_width));
         setFocusable(true);
     }
 
     public void startDrone(){
-        //droneAction = new Actions();
-        droneAction = new Control();
+        droneAction = new DroneControl();
         droneAction.disablePad();
     }
 
@@ -56,50 +57,134 @@ public class Keys extends JFrame implements KeyListener{ // class for GUI of con
     }
 
     public void addComponentstoPage(){   
-            // add jpanel
+            // Top Layer
         JPanel topLayer_pnl = new JPanel();
         topLayer_pnl.setLayout(new FlowLayout(FlowLayout.CENTER,20,10)); // 20 pixel horizontal spacing and 10 vertical
         jcombo_controllerList = new JComboBox();
-        topLayer_pnl.add(jcombo_controllerList);
         JButton controller_search_butt = new JButton("Look for Controllers");
+        JButton controller_start_butt = new JButton("Start Controller Mode");
+        JButton update_speed_butt = new JButton("Update Speed");
+        JLabel speedLabel  = new JLabel("Speed(min 10, max 100): ");
+        JTextField speedTextField = new JTextField("10");
+        speedTextField.setPreferredSize(new Dimension(40,30));
         controller_search_butt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e ){
-                searchForControllers();
+                // Controller Lookup button action
+                fillControllerList();
                 System.out.println("looking for controller");
             }
         });
+        controller_start_butt.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e ){
+                if(droneMode== null){
+                    droneMode = new DroneMode(getSelectedControllerName(), joystickControl, displayArea, droneAction);
+                    // this one just works, may(likely) have memory access problem!....
+                    Thread t = new Thread(droneMode);
+                    t.start();
+                    }else{
+                    droneMode.stop();
+                    droneMode = null;
+                }
+            }
+        });
+        update_speed_butt.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e ){
+                try{
+                    int speed  = Integer.parseInt(speedTextField.getText());
+                    if(speed<=100 && speed>=10){
+                        String toDisplay = droneAction.setSpeed(Integer.parseInt(speedTextField.getText()));
+                        //Be careful with memory acess errors with DroneMode Thread
+                        sendtoDisplayArea("Command sent to drone: "+ toDisplay);
+                    }else{
+                        String toDisplay = (speed>100)?"Your speed can't be greater than 100":"Your speed can't be less than 10";
+                        sendtoDisplayArea(toDisplay);
+                    }
+                 }catch(NumberFormatException err){
+                    sendtoDisplayArea("Not a number given, speed will be set to 10");
+                    String toDisplay = droneAction.setSpeed(10);
+                    speedTextField.setText("10");
+                        //Be careful with memory acess errors with DroneMode Thread
+                    sendtoDisplayArea("Command sent to drone: "+ toDisplay);
+                 }catch(Exception err){
+                    err.printStackTrace();
+                    sendtoDisplayArea("Unknown error on Speed label occured, speed unchanged");
+                 }
+            }
+        });
+        topLayer_pnl.add(jcombo_controllerList);
         topLayer_pnl.add(controller_search_butt);
+        topLayer_pnl.add(controller_start_butt);
+        topLayer_pnl.add(speedLabel);
+        topLayer_pnl.add(speedTextField);
+        topLayer_pnl.add(update_speed_butt);
         
+        //*********************
+        // WORK ON DEPRECATING KEYBOARD CONTROL
        JPanel middleLayer_pnl = new JPanel();
        middleLayer_pnl.setLayout(new FlowLayout(FlowLayout.CENTER,20,10));
         displayArea = new JTextArea();
-        displayArea.addKeyListener(this); // Let the the whole (this object) window be the Listener for the control/display area
+        displayArea.addKeyListener(this); // Let the the whole (display area) window be the Key listener for keyboard control
         displayArea.setEditable(false);
         JScrollPane displayScrollPane = new JScrollPane(displayArea); // male the display and control area a scroll plane
-        displayScrollPane.setPreferredSize(new Dimension(375,325));
+        displayScrollPane.setPreferredSize(new Dimension(375,500));
         telemetryArea = new JTextArea();
         telemetryArea.setEditable(false);
         JScrollPane telemetryScrollPane = new JScrollPane(telemetryArea);
-        telemetryScrollPane.setPreferredSize(new Dimension(375,325));
+        telemetryScrollPane.setPreferredSize(new Dimension(375,500));
         middleLayer_pnl.add(displayScrollPane);
         middleLayer_pnl.add(telemetryScrollPane);
         
+        //********************* 
+
         JPanel bottomLayer_pnl = new JPanel();
-        bottomLayer_pnl.setLayout(new GridLayout(2,3));
+        bottomLayer_pnl.setLayout(new GridLayout(2,3)); // 2 rows 3 columns
         JButton clearDisplayButton = new JButton("Clear Display Area");
         JButton clearTelemetryButton = new JButton("Clear Telemetry Area");
         JButton startTelloButton = new JButton("Start Tello");
         JButton emergencyTelloButton = new JButton("Emergency Tello");
         JButton landTelloButton = new JButton("Land Tello");
-        JButton shutdownTelloButton = new JButton("Shutdown Tello");
+        JButton shutdownTelloButton = new JButton("Stream On (Temp)");
         clearDisplayButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e ){
                 displayArea.setText("");
                 displayArea.requestFocusInWindow(); // return focus to window
             }
         });
-        //Add rest of listeners here
-
+        clearTelemetryButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e ){
+                telemetryArea.setText("");
+                displayArea.requestFocusInWindow();
+            }
+        });
+        startTelloButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e ){
+                String toDisplay  = droneAction.enterSDKMode();
+                //Be careful with memory acess errors with DroneMode Thread
+                sendtoDisplayArea("Command sent to drone: "+ toDisplay);
+                droneAction.disablePad();
+            }
+        });
+        emergencyTelloButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e ){
+                String toDisplay = droneAction.emergency();     
+                //Be careful with memory acess errors with DroneMode Thread
+                sendtoDisplayArea("Command sent to drone: "+ toDisplay);
+            }
+        });
+        landTelloButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e ){
+                String toDisplay = droneAction.land();
+                //Be careful with memory acess errors with DroneMode Thread
+                sendtoDisplayArea("Command sent to drone: "+ toDisplay);
+            }
+        });
+        shutdownTelloButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent e ){
+                String toDisplay = droneAction.streamOn();
+                //Be careful with memory acess errors with DroneMode Thread
+                sendtoDisplayArea("Command sent to drone: "+ toDisplay);
+            }
+        });
         bottomLayer_pnl.add(clearDisplayButton);
         bottomLayer_pnl.add(clearTelemetryButton);
         bottomLayer_pnl.add(startTelloButton);
@@ -113,26 +198,17 @@ public class Keys extends JFrame implements KeyListener{ // class for GUI of con
         this.getContentPane().add(bottomLayer_pnl,BorderLayout.PAGE_END);
     }
 
-    public void searchForControllers(){
-        Controller[] controllers = ControllerEnvironment.getDefaultEnvironment().getControllers();
+        
+    public void fillControllerList(){
 
-        for(int i = 0; i < controllers.length; i++){
-            Controller controller = controllers[i];
-            
-            if (
-                    controller.getType() == Controller.Type.STICK || 
-                    controller.getType() == Controller.Type.GAMEPAD || 
-                    controller.getType() == Controller.Type.WHEEL ||
-                    controller.getType() == Controller.Type.FINGERSTICK
-               )
-            {
-                // Add new controller to the list of all controllers.
-                foundControllers.add(controller);
-                
-                // Add new controller to the list on the window.
-                addControllerName(controller.getName() + " - " + controller.getType().toString() + " type");
-                System.out.println(controller.getName() + " - " + controller.getType().toString() + " type");
-            }
+        jcombo_controllerList.removeAllItems();
+        ArrayList<String> controllerList = joystickControl.searchForControllers();
+        if(controllerList.isEmpty()){
+            addControllerName("No controller Found");
+            return;
+        }
+        for(String controller:controllerList){
+            addControllerName(controller);
         }
     }
     
@@ -148,7 +224,6 @@ public class Keys extends JFrame implements KeyListener{ // class for GUI of con
         jcombo_controllerList.removeAllItems();
         jcombo_controllerList.addItem("Controller disconnected!");
     }
-    
     
 
     @Override // maybe not needed?
@@ -238,6 +313,11 @@ public class Keys extends JFrame implements KeyListener{ // class for GUI of con
         System.out.println(out);
     }
 
+    private void sendtoDisplayArea(String str){
+        displayArea.append(str+ newline);
+        displayArea.setCaretPosition(displayArea.getDocument().getLength()); // scroll down window automatically
+    }
+    
     private void droneActionCall(KeyEvent e){
         int id = e.getID();
         String keyString = "";

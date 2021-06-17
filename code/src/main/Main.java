@@ -1,6 +1,6 @@
 package src.main;
 
-
+import javax.swing.SwingUtilities;
 
 public class Main {
    
@@ -12,6 +12,9 @@ public class Main {
         control.startDrone();
         control.createAndShowGui();
       
+
+    
+    
         
    
         
