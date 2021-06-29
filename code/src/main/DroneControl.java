@@ -84,6 +84,7 @@ public class DroneControl extends Connection{
     public String setSpeed(int x){
         String command = "speed "+x;
         super.sendCommand(command);
+        //System.out.println(super.sendAndReceiveCommand(command));
         return command;
     }
 

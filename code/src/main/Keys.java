@@ -25,21 +25,22 @@ public class Keys extends JFrame implements KeyListener{ // class for GUI of con
     private JTextArea telemetryArea;
     private DroneControl droneAction;
     private JComboBox jcombo_controllerList;
-    private final int jFrame_default_width = 700;
+    private final int jFrame_default_width = 1200;
     private final int JFrame_default_height = 800;    
     private JoystickControl joystickControl = new JoystickControl();
     private DroneMode droneMode;
+    private DroneTelemetry droneTelemetry;
     //private boolean drone_Control_Active = false;
 
     public Keys(){
         super("Drone Control Default Name");
-        setMinimumSize(new Dimension(JFrame_default_height,jFrame_default_width));
+        setMinimumSize(new Dimension(jFrame_default_width,JFrame_default_height));
         setFocusable(true);
     }
 
     public Keys(String name){
         super(name);
-        setMinimumSize(new Dimension(JFrame_default_height,jFrame_default_width));
+        setMinimumSize(new Dimension(jFrame_default_width,JFrame_default_height));
         setFocusable(true);
     }
 
@@ -76,14 +77,19 @@ public class Keys extends JFrame implements KeyListener{ // class for GUI of con
         });
         controller_start_butt.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e ){
-                if(droneMode== null){
+                if(droneMode== null && droneTelemetry==null){
                     droneMode = new DroneMode(getSelectedControllerName(), joystickControl, displayArea, droneAction);
+                    droneTelemetry = new DroneTelemetry(telemetryArea);
                     // this one just works, may(likely) have memory access problem!....
-                    Thread t = new Thread(droneMode);
-                    t.start();
+                    Thread t1 = new Thread(droneMode);
+                    Thread t2 = new Thread(droneTelemetry);
+                    t1.start();
+                    t2.start();
                     }else{
                     droneMode.stop();
+                    droneTelemetry.stop();
                     droneMode = null;
+                    droneTelemetry = null;
                 }
             }
         });
