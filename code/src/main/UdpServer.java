@@ -29,26 +29,29 @@ public class UdpServer {
         return retMsg;
     }
 
-    public String sendAndReceive(Inet4Address address, String msg) throws Exception{
+    public String sendAndReceive(InetAddress address, String msg) throws Exception{
         //byte[] buf = new byte[1024];
-        final DatagramPacket sendPacket = new DatagramPacket(msg.getBytes(),msg.getBytes().length , address, this.port)
+        final DatagramPacket sendPacket = new DatagramPacket(msg.getBytes(),msg.getBytes().length , address, 8889);
         //final DatagramPacket receivPacket = new DatagramPacket(buf, buf.length);
         String ret = "";
 
         udpSocket.send(sendPacket);
 
         ret = this.listen();
-
+        return ret;
     }
 
     public static void main(String[] args) throws Exception{
-        UdpServer ser = new UdpServer(8889);
-        
+        UdpServer ser = new UdpServer(62704);
         // test send and recieve of tello battery message (send and receive, amke sure ip and port is correct)        
-
+        System.out.println(InetAddress.getAllByName("10.0.0.1")[0].toString());
+       System.out.println( ser.sendAndReceive(InetAddress.getAllByName("192.168.10.1")[0], "sdk?"));
+       
+       /*
         while(true){
             System.out.println(ser.listen());
         }
+        */
     }
 
 
