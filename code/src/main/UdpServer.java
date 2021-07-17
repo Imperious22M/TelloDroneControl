@@ -42,10 +42,17 @@ public class UdpServer {
     }
 
     public static void main(String[] args) throws Exception{
-        UdpServer ser = new UdpServer(62704);
-        // test send and recieve of tello battery message (send and receive, amke sure ip and port is correct)        
+        UdpServer ser = new UdpServer(62704); // port working was 62704
+        // test send and recieve of tello battery message (send and receive, make sure ip and port is correct)        
         System.out.println(InetAddress.getAllByName("10.0.0.1")[0].toString());
-       System.out.println( ser.sendAndReceive(InetAddress.getAllByName("192.168.10.1")[0], "sdk?"));
+       
+        System.out.println( ser.sendAndReceive(InetAddress.getAllByName("192.168.10.1")[0], "command"));
+        System.out.println( ser.sendAndReceive(InetAddress.getAllByName("192.168.10.1")[0], "speed 100"));
+        System.out.println( ser.sendAndReceive(InetAddress.getAllByName("192.168.10.1")[0], "battery?"));
+        System.out.println( ser.sendAndReceive(InetAddress.getAllByName("192.168.10.1")[0], "sdk?"));
+       System.out.println( ser.sendAndReceive(InetAddress.getAllByName("192.168.10.1")[0], "time?"));
+       System.out.println( ser.sendAndReceive(InetAddress.getAllByName("192.168.10.1")[0], "wifi?"));
+       System.out.println( ser.sendAndReceive(InetAddress.getAllByName("192.168.10.1")[0], "speed?"));
        
        /*
         while(true){

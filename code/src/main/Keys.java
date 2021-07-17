@@ -85,11 +85,13 @@ public class Keys extends JFrame implements KeyListener{ // class for GUI of con
                     Thread t2 = new Thread(droneTelemetry);
                     t1.start();
                     t2.start();
+                    controller_start_butt.setText("Stop Controller Mode");
                     }else{
                     droneMode.stop();
                     droneTelemetry.stop();
                     droneMode = null;
                     droneTelemetry = null;
+                    controller_start_butt.setText("Start Controller Mode");
                 }
             }
         });
