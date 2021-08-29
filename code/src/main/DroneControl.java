@@ -1,20 +1,21 @@
 package src.main;
 
-import com.tello.connection.*;
+//import com.tello.connection.*;
 
 // Extend Connection class, implement clean shutdown sequence
 
-public class DroneControl extends Connection{
+public class DroneControl extends UdpServer{
     public static final String host = "192.168.10.1";
-    public static final int port = 8889;
+    public static final int clientPort = 62704; // 62704 is the default high port of the tello, no other port found so far works
+    public static final int hostPort = 8889;
 
     public DroneControl(){
-        super(host,port);
+        super(host, hostPort, clientPort);
         this.enterSDKMode();
     }
 
-    public DroneControl(String host, int port){
-        super(host,port);
+    public DroneControl(String host, int hostPort, int serverPort){
+        super(host,hostPort, serverPort);
         this.enterSDKMode();
     }
 
@@ -81,9 +82,11 @@ public class DroneControl extends Connection{
         return "streamon";
     }
 
-    public String setSpeed(int x){
+    // All set commands will have a response required??
+
+    public String setSpeed(int x){ 
         String command = "speed "+x;
-        super.sendCommand(command);
+        super.sendAndReceiveCommand(command);
         //System.out.println(super.sendAndReceiveCommand(command));
         return command;
     }

@@ -23,6 +23,7 @@ public class DroneTelemetry implements Runnable{
     }
 
     public void stop(){
+        server.close();
         isActive.set(false);
     }
 
@@ -32,7 +33,7 @@ public class DroneTelemetry implements Runnable{
 
         while(isActive.get()){
             try{
-                msg = server.listen();
+                msg = server.receiveMessage();
                 sendtoDisplayArea(msg);
             }catch(Exception e){
                 sendtoDisplayArea(e.getStackTrace().toString());
