@@ -151,7 +151,7 @@ public class Keys extends JFrame implements KeyListener{ // class for GUI of con
         JButton startTelloButton = new JButton("Start Tello");
         JButton emergencyTelloButton = new JButton("Emergency Tello");
         JButton landTelloButton = new JButton("Land Tello");
-        JButton shutdownTelloButton = new JButton("Stream On (Temp)");
+        JButton streamOnButton = new JButton("Stream On (Temp)");
         clearDisplayButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e ){
                 displayArea.setText("");
@@ -186,7 +186,7 @@ public class Keys extends JFrame implements KeyListener{ // class for GUI of con
                 sendtoDisplayArea("Command sent to drone: "+ toDisplay);
             }
         });
-        shutdownTelloButton.addActionListener(new java.awt.event.ActionListener() {
+        streamOnButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent e ){
                 String toDisplay = droneAction.streamOn();
                 //Be careful with memory acess errors with DroneMode Thread
@@ -198,7 +198,7 @@ public class Keys extends JFrame implements KeyListener{ // class for GUI of con
         bottomLayer_pnl.add(startTelloButton);
         bottomLayer_pnl.add(emergencyTelloButton);
         bottomLayer_pnl.add(landTelloButton);
-        bottomLayer_pnl.add(shutdownTelloButton);
+        bottomLayer_pnl.add(streamOnButton);
 
         this.setLayout(new BorderLayout());
         this.add(topLayer_pnl,BorderLayout.PAGE_START);
