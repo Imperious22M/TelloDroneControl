@@ -51,7 +51,7 @@ public class DroneMode implements Runnable{
             int Xbutt = Integer.parseInt(valueDictionary.get("Button 2"));
             int Abutt = Integer.parseInt(valueDictionary.get("Button 0"));
             int Bbutt = Integer.parseInt(valueDictionary.get("Button 1"));
-            if(Bbutt==1){
+            if(Bbutt==1){//Button Actions
                 droneAction.land();
             }
             if(Xbutt ==1){
